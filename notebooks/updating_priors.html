@@ -1,0 +1,596 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Updating priors &#8212; PyMC3 3.4.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.4.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+</style>
+<div class="section" id="Updating-priors">
+<h1>Updating priors<a class="headerlink" href="#Updating-priors" title="Permalink to this headline">¶</a></h1>
+<p>In this notebook, I will show how it is possible to update the priors as
+new data becomes available. The example is a slightly modified version
+of the linear regression in the <a class="reference external" href="https://github.com/pymc-devs/pymc3/blob/master/docs/source/notebooks/getting_started.ipynb">Getting started with
+PyMC3</a>
+notebook.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span> <span class="kn">as</span> <span class="nn">mpl</span>
+<span class="kn">from</span> <span class="nn">pymc3</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Normal</span><span class="p">,</span> <span class="n">Slice</span>
+<span class="kn">from</span> <span class="nn">pymc3</span> <span class="kn">import</span> <span class="n">sample</span>
+<span class="kn">from</span> <span class="nn">pymc3</span> <span class="kn">import</span> <span class="n">traceplot</span>
+<span class="kn">from</span> <span class="nn">pymc3.distributions</span> <span class="kn">import</span> <span class="n">Interpolated</span>
+<span class="kn">from</span> <span class="nn">theano</span> <span class="kn">import</span> <span class="n">as_op</span>
+<span class="kn">import</span> <span class="nn">theano.tensor</span> <span class="kn">as</span> <span class="nn">tt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
+
+<span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+<div class="section" id="Generating-data">
+<h2>Generating data<a class="headerlink" href="#Generating-data" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Initialize random number generator</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
+
+<span class="c1"># True parameter values</span>
+<span class="n">alpha_true</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">beta0_true</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="n">beta1_true</span> <span class="o">=</span> <span class="mi">13</span>
+
+<span class="c1"># Size of dataset</span>
+<span class="n">size</span> <span class="o">=</span> <span class="mi">100</span>
+
+<span class="c1"># Predictor variable</span>
+<span class="n">X1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+<span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.2</span>
+
+<span class="c1"># Simulate outcome variable</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">alpha_true</span> <span class="o">+</span> <span class="n">beta0_true</span> <span class="o">*</span> <span class="n">X1</span> <span class="o">+</span> <span class="n">beta1_true</span> <span class="o">*</span> <span class="n">X2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Model-specification">
+<h2>Model specification<a class="headerlink" href="#Model-specification" title="Permalink to this headline">¶</a></h2>
+<p>Our initial beliefs about the parameters are quite informative (sd=1)
+and a bit off the true values.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">basic_model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="n">basic_model</span><span class="p">:</span>
+
+    <span class="c1"># Priors for unknown model parameters</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sd</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">beta0</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="s1">&#39;beta0&#39;</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">sd</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">beta1</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="s1">&#39;beta1&#39;</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">sd</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Expected value of outcome</span>
+    <span class="n">mu</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">+</span> <span class="n">beta0</span> <span class="o">*</span> <span class="n">X1</span> <span class="o">+</span> <span class="n">beta1</span> <span class="o">*</span> <span class="n">X2</span>
+
+    <span class="c1"># Likelihood (sampling distribution) of observations</span>
+    <span class="n">Y_obs</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="s1">&#39;Y_obs&#39;</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="n">mu</span><span class="p">,</span> <span class="n">sd</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="n">Y</span><span class="p">)</span>
+
+    <span class="c1"># draw 1000 posterior samples</span>
+    <span class="n">trace</span> <span class="o">=</span> <span class="n">sample</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="stderr output_area docutils container">
+<div class="highlight"><pre>
+Auto-assigning NUTS sampler...
+Initializing NUTS using ADVI...
+Average Loss = 182.07:   9%|▉         | 17993/200000 [00:01&lt;00:16, 11195.63it/s]
+Convergence archived at 19400
+Interrupted at 19,400 [9%]: Average Loss = 958.67
+100%|██████████| 1500/1500 [00:00&lt;00:00, 1762.74it/s]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">traceplot</span><span class="p">(</span><span class="n">trace</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_updating_priors_8_0.png" src="../_images/notebooks_updating_priors_8_0.png" />
+</div>
+</div>
+<p>In order to update our beliefs about the parameters, we use the
+posterior distributions, which will be used as the prior distributions
+for the next inference. The data used for each inference iteration has
+to be independent from the previous iterations, otherwise the same
+(possibly wrong) belief is injected over and over in the system,
+amplifying the errors and misleading the inference. By ensuring the data
+is independent, the system should converge to the true parameter values.</p>
+<p>Because we draw samples from the posterior distribution (shown on the
+right in the figure above), we need to estimate their probability
+density (shown on the left in the figure above). <a class="reference external" href="https://en.wikipedia.org/wiki/Kernel_density_estimation">Kernel density
+estimation</a>
+(KDE) is a way to achieve this, and we will use this technique here. In
+any case, it is an empirical distribution that cannot be expressed
+analytically. Fortunately PyMC3 provides a way to use custom
+distributions, via <code class="docutils literal"><span class="pre">Interpolated</span></code> class.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">from_posterior</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">samples</span><span class="p">):</span>
+    <span class="n">smin</span><span class="p">,</span> <span class="n">smax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">samples</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">smax</span> <span class="o">-</span> <span class="n">smin</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">smin</span><span class="p">,</span> <span class="n">smax</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">gaussian_kde</span><span class="p">(</span><span class="n">samples</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># what was never sampled should have a small probability but not 0,</span>
+    <span class="c1"># so we&#39;ll extend the domain and use linear approximation of density on it</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">width</span><span class="p">],</span> <span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">width</span><span class="p">]])</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+    <span class="k">return</span> <span class="n">Interpolated</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Now we just need to generate more data and build our Bayesian model so
+that the prior distributions for the current iteration are the posterior
+distributions from the previous iteration. It is still possible to
+continue using NUTS sampling method because <code class="docutils literal"><span class="pre">Interpolated</span></code> class
+implements calculation of gradients that are necessary for Hamiltonian
+Monte Carlo samplers.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">traces</span> <span class="o">=</span> <span class="p">[</span><span class="n">trace</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+
+    <span class="c1"># generate more data</span>
+    <span class="n">X1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.2</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">alpha_true</span> <span class="o">+</span> <span class="n">beta0_true</span> <span class="o">*</span> <span class="n">X1</span> <span class="o">+</span> <span class="n">beta1_true</span> <span class="o">*</span> <span class="n">X2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">model</span><span class="p">:</span>
+        <span class="c1"># Priors are posteriors from previous iteration</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">from_posterior</span><span class="p">(</span><span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="n">trace</span><span class="p">[</span><span class="s1">&#39;alpha&#39;</span><span class="p">])</span>
+        <span class="n">beta0</span> <span class="o">=</span> <span class="n">from_posterior</span><span class="p">(</span><span class="s1">&#39;beta0&#39;</span><span class="p">,</span> <span class="n">trace</span><span class="p">[</span><span class="s1">&#39;beta0&#39;</span><span class="p">])</span>
+        <span class="n">beta1</span> <span class="o">=</span> <span class="n">from_posterior</span><span class="p">(</span><span class="s1">&#39;beta1&#39;</span><span class="p">,</span> <span class="n">trace</span><span class="p">[</span><span class="s1">&#39;beta1&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Expected value of outcome</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">+</span> <span class="n">beta0</span> <span class="o">*</span> <span class="n">X1</span> <span class="o">+</span> <span class="n">beta1</span> <span class="o">*</span> <span class="n">X2</span>
+
+        <span class="c1"># Likelihood (sampling distribution) of observations</span>
+        <span class="n">Y_obs</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="s1">&#39;Y_obs&#39;</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="n">mu</span><span class="p">,</span> <span class="n">sd</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="n">Y</span><span class="p">)</span>
+
+        <span class="c1"># draw 10000 posterior samples</span>
+        <span class="n">trace</span> <span class="o">=</span> <span class="n">sample</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+        <span class="n">traces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="stderr output_area docutils container">
+<div class="highlight"><pre>
+Auto-assigning NUTS sampler...
+Initializing NUTS using ADVI...
+Average Loss = 130.2:   6%|▌         | 11781/200000 [00:01&lt;00:29, 6466.53it/s]
+Convergence archived at 12300
+Interrupted at 12,300 [6%]: Average Loss = 145.76
+100%|██████████| 1500/1500 [00:04&lt;00:00, 355.08it/s]
+Auto-assigning NUTS sampler...
+Initializing NUTS using ADVI...
+Average Loss = 138.51:   6%|▌         | 11335/200000 [00:01&lt;00:33, 5566.37it/s]
+Convergence archived at 11700
+Interrupted at 11,700 [5%]: Average Loss = 150.98
+100%|██████████| 1500/1500 [00:03&lt;00:00, 394.51it/s]
+Auto-assigning NUTS sampler...
+Initializing NUTS using ADVI...
+Average Loss = 146.1:   5%|▍         | 9556/200000 [00:01&lt;00:31, 5991.28it/s]
+Convergence archived at 10100
+Interrupted at 10,100 [5%]: Average Loss = 154.06
+100%|██████████| 1500/1500 [00:04&lt;00:00, 319.51it/s]
+Auto-assigning NUTS sampler...
+Initializing NUTS using ADVI...
+Average Loss = 142.7:   6%|▌         | 11648/200000 [00:02&lt;00:36, 5109.37it/s]
+Convergence archived at 12200
+Interrupted at 12,200 [6%]: Average Loss = 155.77
+100%|██████████| 1500/1500 [00:04&lt;00:00, 373.05it/s]
+Auto-assigning NUTS sampler...
+Initializing NUTS using ADVI...
+Average Loss = 133.23:   7%|▋         | 13050/200000 [00:02&lt;00:50, 3711.73it/s]
+Convergence archived at 13400
+Interrupted at 13,400 [6%]: Average Loss = 143.05
+100%|██████████| 1500/1500 [00:03&lt;00:00, 486.74it/s]
+Auto-assigning NUTS sampler...
+Initializing NUTS using ADVI...
+Average Loss = 139.02:   6%|▌         | 11484/200000 [00:02&lt;00:33, 5578.01it/s]
+Convergence archived at 11700
+Interrupted at 11,700 [5%]: Average Loss = 149.03
+100%|██████████| 1500/1500 [00:04&lt;00:00, 320.46it/s]
+Auto-assigning NUTS sampler...
+Initializing NUTS using ADVI...
+Average Loss = 155.61:   6%|▋         | 12827/200000 [00:02&lt;00:30, 6235.03it/s]
+Convergence archived at 13100
+Interrupted at 13,100 [6%]: Average Loss = 161.57
+100%|██████████| 1500/1500 [00:04&lt;00:00, 350.61it/s]
+Auto-assigning NUTS sampler...
+Initializing NUTS using ADVI...
+Average Loss = 134.84:   5%|▌         | 10191/200000 [00:02&lt;00:38, 4917.16it/s]
+Convergence archived at 10500
+Interrupted at 10,500 [5%]: Average Loss = 143.89
+100%|██████████| 1500/1500 [00:03&lt;00:00, 498.10it/s]
+Auto-assigning NUTS sampler...
+Initializing NUTS using ADVI...
+Average Loss = 143.05:   8%|▊         | 15703/200000 [00:02&lt;00:32, 5607.34it/s]
+Convergence archived at 16100
+Interrupted at 16,100 [8%]: Average Loss = 156.48
+100%|██████████| 1500/1500 [00:03&lt;00:00, 495.78it/s]
+Auto-assigning NUTS sampler...
+Initializing NUTS using ADVI...
+Average Loss = 142.04:   5%|▍         | 9850/200000 [00:02&lt;00:35, 5368.61it/s]
+Convergence archived at 10400
+Interrupted at 10,400 [5%]: Average Loss = 147.67
+100%|██████████| 1500/1500 [00:05&lt;00:00, 277.10it/s]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">print</span><span class="p">(</span><span class="s1">&#39;Posterior distributions after &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">traces</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39; iterations.&#39;</span><span class="p">)</span>
+<span class="n">cmap</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">autumn</span>
+<span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="s1">&#39;beta0&#39;</span><span class="p">,</span> <span class="s1">&#39;beta1&#39;</span><span class="p">]:</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">update_i</span><span class="p">,</span> <span class="n">trace</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">traces</span><span class="p">):</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">trace</span><span class="p">[</span><span class="n">param</span><span class="p">]</span>
+        <span class="n">smin</span><span class="p">,</span> <span class="n">smax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">samples</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">smin</span><span class="p">,</span> <span class="n">smax</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">gaussian_kde</span><span class="p">(</span><span class="n">samples</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">cmap</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">update_i</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">traces</span><span class="p">)))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">({</span><span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="n">alpha_true</span><span class="p">,</span> <span class="s1">&#39;beta0&#39;</span><span class="p">:</span> <span class="n">beta0_true</span><span class="p">,</span> <span class="s1">&#39;beta1&#39;</span><span class="p">:</span> <span class="n">beta1_true</span><span class="p">}[</span><span class="n">param</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Frequency&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Posterior distributions after 11 iterations.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_updating_priors_14_1.png" src="../_images/notebooks_updating_priors_14_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_updating_priors_14_2.png" src="../_images/notebooks_updating_priors_14_2.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_updating_priors_14_3.png" src="../_images/notebooks_updating_priors_14_3.png" />
+</div>
+</div>
+<p>You can re-execute the last two cells to generate more updates.</p>
+<p>What is interesting to note is that the posterior distributions for our
+parameters tend to get centered on their true value (vertical lines),
+and the distribution gets thiner and thiner. This means that we get more
+confident each time, and the (false) belief we had at the beginning gets
+flushed away by the new data we incorporate.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/pymc3_logo.jpg" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../index.html">PyMC3</a></h1>
+
+
+
+<p class="blurb">Probabilistic Programming in Python: Bayesian Modeling and Probabilistic Machine Learning with Theano</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prob_dists.html">Probability Distributions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, The PyMC Development Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/notebooks/updating_priors.ipynb.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
